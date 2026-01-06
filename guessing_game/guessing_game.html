@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Guessing Game!</title>
+    <script>
+        let answer;
+        let low = 0;
+        let high = 100;
+
+        function load() {
+            // Prepare the random number (0 to 100 inclusive)
+            answer = Math.floor(Math.random() * 101);
+            low = 0;
+            high = 100;
+            console.log("Answer has been generated. The answer is: " + answer);
+        }
+
+        function start() {
+            document.getElementById("title").style.display = "none";
+            document.getElementById("main").style.display = "block";
+            // Initialize range display
+            document.getElementById("range").innerHTML = "0 - 100";
+        }
+
+        function guess() {
+            // Prevent action if already correct
+            let previous = document.getElementById("guess").innerHTML;
+            if (previous !== "-" && parseInt(previous) == answer) {
+                return;
+            }
+
+            let input = prompt("Please input your guess between " + low + " and " + high + ":");
+
+            console.log("User has inputted a guess: " + input);
+
+            if (input === null || input === "") return; // Cancel clicked
+
+            let guessNum = parseFloat(input);
+
+            let hint = document.getElementById("hint");
+            let guessDisplay = document.getElementById("guess");
+            let rangeDisplay = document.getElementById("range");
+
+            // Case 1: not a number
+            if (isNaN(guessNum)) {
+                console.log("System dectected the last input was invalided (not a number).");
+                alert(input + " is not a number");
+                hint.innerHTML = "Please enter a valid number!";
+                return false;
+            }
+
+            // Case 2: not an integer
+            if (guessNum % 1 !== 0) {
+                console.log("System dectected the last input was invalided (not a integer).");
+                alert(guessNum + " is not an integer");
+                hint.innerHTML = "Please enter a valid integer!";
+                return false;
+            }
+
+            // Case 3: out of current valid range
+            if (guessNum < low || guessNum > high) {
+                console.log("System dectected the last input was invalided (outside of current range).");
+                alert(guessNum + " is outside the current range (" + low + "-" + high + ")");
+                hint.innerHTML = "Please enter a number within the current range!";
+                return false;
+            }
+
+            // Update displayed guess
+            guessDisplay.innerHTML = parseInt(guessNum);
+
+            // Check guess and update range
+            if (guessNum < answer) {
+                low = guessNum + 1;  // New minimum is one above guess
+                hint.innerHTML = "The guess is too small";
+            } else if (guessNum > answer) {
+                high = guessNum - 1;  // New maximum is one below guess
+                hint.innerHTML = "The guess is too big";
+            } else {
+                hint.style.color = "green";
+                hint.innerHTML = "Correct guess! The number was " + answer + "!";
+                alert("Congratulations! You got it!");
+                return false;
+            }
+
+            // Update range display
+            if (low === high) {
+                // Only one number left
+                hint.innerHTML = "The only possible number left is " + low + "!";
+                rangeDisplay.innerHTML = low;
+            }
+            else {
+                rangeDisplay.innerHTML = low + " - " + high;
+            }
+            
+
+            return false;
+        }
+    </script>
+    <style>
+    /* This is the style of the body element */
+    body {
+        font-family: Georgia, serif;
+        background: black url(smoke.png);
+        background-size: 100% 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .box {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        width: 90vw;
+        height: 90vh;
+        margin: 5vh auto;
+        border: 10px solid black;
+        place-items: center;
+        padding: 30px;
+        font-family: 'crimson text', serif;
+        text-align: center;
+        text-transform: uppercase;
+    }
+
+    .marginless {
+        margin: 0;
+        padding: 0;
+    }
+
+    .withmargin {
+        margin: 25px 0;
+    }
+
+    #title {
+        color: white;
+        background-color: rgb(0, 0, 0);
+        opacity: 0.8;
+        cursor: pointer;
+    }
+
+    #title1 {
+        font-size: 100px;
+    }
+
+    #title2 {
+        font-size: 200px;
+    }
+
+    #subtitle {
+        font-size: 45px;
+        text-align: justify;
+        transform: translate(50%, 0%);
+    }
+
+    #main {
+        font-size: 100px;
+        text-transform: none;
+        color: black;
+        background: rgba(255, 255, 255, 0.2);
+        display: none;
+    }
+
+    #button {
+        display: inline-block;
+        padding: 15px 25px;
+        font-size: 30px;
+        color: black;
+        background-color: rgb(128, 128, 128);
+        text-decoration: none;
+        border-radius: 10px;
+        border: 5px solid black;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    #hint {
+        font-size: 80px;
+        color: red;
+    }
+    </style>
+</head>
+<body onload="load()">
+    <!-- Title screen -->
+    <div class="box" id="title" onclick="start()">
+        <p id="title1" class="marginless">Fantastic</p>
+        <p id="title2" class="marginless">Number</p>
+        <p id="subtitle" class="marginless">that <big>You Need</big><br>to <big>Guess</big></p>
+        <p style="margin-top: 15vh; font-size: 4vw; color: white;">Click anywhere to start</p>
+    </div>
+
+    <!-- Game screen -->
+    <div class="box" id="main">
+        <p class="withmargin">Current range: <span id="range">0 - 100</span></p>
+        <p class="withmargin">Your Guess: <span id="guess">-</span></p>
+        <a id="button" href="#" onclick="guess(); return false;">Enter Your Guess</a>
+        <p id="hint" class="withmargin">Press the button to make a guess!</p>
+    </div>
+</body>
+</html>
