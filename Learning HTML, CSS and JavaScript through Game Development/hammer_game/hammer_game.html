@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hammer Game!</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+    let timeRemaining = 3;          // Amount of time remaining for the countdown
+
+    let timeToShowMonster = 2000;   // Amount of time to show the monster
+    let timeToHideMonster = 2000;   // Amount of time to hide the monster
+    let current_time_weighting = 20;
+    let hideMonsterTimeout;         // Timeout id for hiding the monster
+    let changecolorTimeout;
+    let curr_border_color = "green";
+    
+    let difficulty = 2;             //   value for difficulty (0-2), set it here :D
+    let hammered_num = 0;           // Amount of monster hammered
+    let life = 3;                   // The player's life
+
+    function hideMonster() {
+        clearTimeout(changecolorTimeout)
+        // Change the life and the colour of the holes
+        life = life - 1;
+        $("#life_count").text(life);
+        $(".hole").css("border", "1vmin solid red")
+        curr_border_color = "red";
+        // If the game is over show the game over screen
+        if (life === 0){
+            $("#gameover").show();
+            return false;
+        }
+        // Hide the monster
+        $("#monster").fadeOut(200);
+
+        // Show the monster later again
+        hideMonsterTimeout = setTimeout(showMonster, timeToShowMonster);
+    }
+
+    function showMonster() {
+        // Find the target div randomly and move the monster
+        // to that div
+        // We have 9 holes so Math.random()*9
+        let new_hole_index = parseInt(Math.random()*9)
+
+        // Move the monster element into the randomly chosen hole
+        $(".hole").eq(new_hole_index).append($("#monster"));
+
+        // Show the monster
+        $("#monster").fadeIn(150);
+        
+        if (curr_border_color !== "red"){
+            curr_border_color = "yellow";
+            changecolorTimeout = setTimeout(function(){
+                $(".hole").css("border", "1vmin solid yellow");
+            }, timeToHideMonster - 500);
+        }
+
+        // Hide the monster later (store timeout id so we can clear it)
+        hideMonsterTimeout = setTimeout(hideMonster, timeToHideMonster);
+    }
+
+    function startGame() {
+        // Hide the countdown timer - Done inside Count down function
+
+        // Show the monster the first time
+        setTimeout(showMonster,2000);
+
+        // Set up the click handler of the monster
+        $("#monster").on("click",function(){
+            // - Clear Change color timeout
+            clearTimeout(changecolorTimeout);
+
+            // - Make it green Again
+            curr_border_color = "green";
+            $(".hole").css("border", "1vmin solid green");
+
+            // - Clear the previous hide timeout so it doesn't also trigger
+            clearTimeout(hideMonsterTimeout);
+            // - Hide the monster immediately
+            $("#monster").fadeOut(100);
+            
+            // - Adjust the score
+            hammered_num = hammered_num + 1;
+            $("#hammered").text(parseInt(hammered_num))
+            
+            // - Adjust the monster time
+            //  - gonna randomize it anyway probably  - 200 and a game win maybe?
+            current_time_weighting = current_time_weighting - difficulty;
+            if (current_time_weighting == 0 | hammered_num == 10){
+                // game win
+                $("#gameover").css("color","green");
+                $("#gameover").text("You Win.");
+                $("#gameover").show();
+                return false;
+            }
+
+            // - The time it hides and the time it spawned will be decreased. 
+            // - Its mainly based on current time weight as I don't wanna just randomly minus the whole thing.
+            let new_random_time_weight = parseInt(Math.random()*difficulty)
+            let new_random_time = (new_random_time_weight + current_time_weighting) * 100;
+            current_time_weighting = new_random_time_weight + current_time_weighting;
+
+            timeToHideMonster = new_random_time;
+            // - Show the monster later again
+            hideMonsterTimeout = setTimeout(showMonster, new_random_time);
+        })
+    }
+
+    function countdown() {
+        // Decrease the remaining time
+        timeRemaining = timeRemaining - 1;
+        // Continue the countdown if there is still time;
+        // otherwise, start the game when the time is up
+        if (timeRemaining >= 1){
+            $("#countdown").text(timeRemaining);
+            $("#countdown").show();
+            $("#countdown").fadeOut(800);
+            setTimeout(countdown, 1000);
+        }
+        else{
+            if (timeRemaining === 0){
+                $("#countdown").text("Start");
+                $("#countdown").show();
+                $("#countdown").fadeOut(2000);
+                setTimeout(countdown, 1000);
+            }
+            else {
+                startGame();
+            }
+        }
+    }
+
+    $(function() {
+        // Start the countdown screen
+        $("#countdown").show();
+        $("#countdown").fadeOut(800);
+        setTimeout(countdown, 1000);
+    });
+    </script>
+
+    <!-- This is the font returned from Google font -->
+    <link href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+
+    <style>
+    /* This is the style of the body element */
+    body {
+        font-family: 'Gloria Hallelujah', cursive;
+        margin: 0;
+        padding: 0;
+        background: white url(clown.png);
+    }
+
+    /* Set the common style for the countdown and gameover divs */
+    #countdown, #gameover {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        padding: 0;
+        text-align: center;
+        font-size: 20vh;
+        line-height: 100vh;
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+
+    /* - Set the properties for the countdown div */
+    #countdown {
+        color: yellow;
+        display: none;
+    }
+
+    /* - Set the properties for the gameover div */
+    #gameover {
+        color: red;
+        display: none;
+    }
+
+    /* Set the style of the game area */
+    #game-area {
+        width: 90vmin;
+        height: 80vmin;
+        margin: 5vmin auto;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 1vmin;
+        box-sizing: border-box;
+    }
+
+    /* - Set the style of the holes (grid cells) */
+    .hole {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1vmin solid green;
+        box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+    }
+
+    /* - Set the style of the monster image */
+    #monster {
+        max-width: 80%;
+        max-height: 80%;
+        cursor: pointer;
+        display: none;
+    }
+    </style>
+</head>
+<body>
+    <!-- This div contains all holes. 9 holes ba -->
+    <p style="text-align: center; background-color: white;">
+        Current Live Count: <span id="life_count">3</span><br />
+        Number of monster <b>hammered</b>: <span id="hammered">0</span>/10
+    </p>
+    <div id="game-area">
+        <div class="hole">
+            <!-- This is the monster -->
+            <img id="monster" src="nomore.png" alt="Monster">
+        </div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+    </div>
+
+    <!-- The countdown screen -->
+    <div id="countdown">3</div>
+
+    <!-- The gameover screen -->
+    <div id="gameover">Game Over</div>
+</body>
+</html>
