@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jumping Game</title>
+    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=9Z4n3rdNiS61rslaK3i5ZvoOI89lzA0Faycy4t2R-OBrOXeiWsag8sRhyYDXtnhIGBmM0GAb4nD-dT8uMUXGAHQDRgWMX4gf8s59vSYzscBxQOKuHFm6OBrL6zdyLcJz2OnZZigVyqnuqbRaic2cepbmF38qqZgucbkD9xvht-gNg0fhp_PmdjdFPCCyzsPfgoVHqB6Lnw7QE4riJx_GoJlzybFJghFj8z0psLPeRFpWa9h1cKRj5QMzZA2fjlIor39-mZrU90RkA6aCWXWWCow-YNDbsXjn-mQ3v6rpF_60MzDtLNbMUhgmrKrp6LBpVOfU4hubOnbNLoLi9oMx7t7cf2GXLaasBgNtL2c98CchdxEaGuGq3i3KPwyIRMlAv-mzUhoTu3Aaivdid8KSvjNpUPukW2zZyMvzDv1paIjktiFYzh1ajt3kglfR2dZUd4bt-o2X_Z0q4_-od5yNHbOgWaji_VsKuwceJWF_Q6s" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9kM2MzM2hjZ2l3ZXYzLmNsb3VkZnJvbnQubmV0LzNjZWRsaHJHUjFTU0R1WnpQRTcyZXdfZGE3NTgxOGIxMjFiNDFhMjkxZDI0NDQ5ZDQ2ZDJlYTFfanVtcGluZ19nYW1lLmh0bWw_RXhwaXJlcz0xNzY4NDA5MTQ5JlNpZ25hdHVyZT1VNjUxcHRKen5NcXhOM2ZENS1OLTZMS2UtaUZTNzFST3VRWWNaUFpudDJyZmNpZWYwdGtUTDE0ZzViUW1QM1NBUDZpT1lFdk9vZ0JvZmZDYXZ0bjAzbEIwM09nWHhYWXV1NGJCaHN3bFVoT3RCa0R1ekpXdGRIUVVnQXhyTnZLZ2xZNUFnT25uVktvSUE1WW8zamZkY3YwUUoxWnJCNkF6Mko1dFd3YUNEZlVfJktleS1QYWlyLUlkPUFQS0FKTFRORTZRTVVZNkhCQzVB"/><script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- This is the font returned from Google font -->
+    <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+    /* Style to make the svg fit in the browser */
+    body { padding: 0; margin: 0; }
+    svg  { width: 100%; height: auto; }
+
+    /* The container moves the text to the middle of the screen */
+    #gameover-container {
+        transform: translate(500px,200px);
+    }
+    #gameover {
+        font-family: Dosis, sans-serif;
+        display: none;
+    }
+
+    .slide-in {
+        animation: slide-in 1s ease-out;
+    }
+
+    @keyframes slide-in {
+        from { transform: translate(1000px, 200px); }
+        to { transform: translate(500px, 200px); }
+    }
+
+    @keyframes cloud-animation {
+    from { transform: translateX(1000px); }
+    to   { transform: translateX(-120px); }
+    }
+    
+    #cloud1 {
+        animation-name: cloud-animation;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+        animation-duration: 10s;
+    }
+
+    #cloud2 {
+        animation-name: cloud-animation;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+        animation-duration: 8s;
+    }
+
+    #obstacle {
+        animation-name: none;
+
+        /* ...other animation settings... */
+        /* animation-name: obstacle-animation; */
+        animation-timing-function: linear;
+        animation-duration: 10s;
+
+        display: none;
+    }
+
+    .frozen {
+        animation-play-state: paused !important;
+    }
+
+    @keyframes obstacle-animation {
+    from { transform: translateX(0px); }
+    to   { transform: translateX(-900px); }
+    }
+
+    #player{
+        animation-name: none;
+		animation-iteration-count: 1;
+		animation-duration: 3s;
+        display:inline;
+    }
+
+    @keyframes player-jump {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-100px); }
+    100% { transform: translateY(0); }
+    }
+
+    </style>
+    <script>
+    // Global variable for obstacle speed
+    var obstacleSpeed = 10; // Initial duration in seconds
+
+    // Check whether the game is over if the player is near the obstacle
+    function checkGameover() {
+        console.log("checkgameover started")
+        // You need to keep on checking for the gameover situation here
+        var player = document.getElementById('player');
+        var obstacle = document.getElementById('obstacle');
+        var check_obstacle_onsite = obstacle.style.display;
+
+        if (check_obstacle_onsite === "none"){
+            console.log("obstacle not yet appeared. Check gameover skipped")
+            setTimeout(checkGameover, 100);
+            return;
+        }
+
+        // Read the transform property of the player and obstacle
+        var playerOffset = player.getBoundingClientRect();
+        var obstacleOffset = obstacle.getBoundingClientRect();
+        
+        // Extract the appropriate numbers
+        var playerX = parseInt(playerOffset.left) || 0;
+        var obstacleX = parseInt(obstacleOffset.left) || 1000;
+
+        if (playerX === 0 & obstacleX === 0){
+            console.log("Failed to get playerX or obstacleX")
+        }
+
+        var playerleft = parseInt(playerOffset.left) + 50;
+        var playerright = parseInt(playerOffset.right) - 50;
+        var playerbottom = parseInt(playerOffset.bottom);
+
+        var obstacleleft = parseInt(obstacleOffset.left)
+        var obstacleright = parseInt(obstacleOffset.right)
+        var obstacletop = parseInt(obstacleOffset.top);
+        
+        // Compare the numbers for the gameover situation
+        if (playerleft < obstacleright &&
+                playerright > obstacleleft &&
+                playerbottom > obstacletop) 
+        {
+            console.log("Game over")
+            $("#gameover").show();
+            $("#gameover-container").addClass('slide-in');
+            // This will freeze all animation
+            $('#cloud1').addClass('frozen');
+            $('#cloud2').addClass('frozen');
+            $('#obstacle').addClass('frozen')
+            $('#player').addClass('frozen')
+            return;
+        }
+
+        // Request to check again
+        setTimeout(checkGameover, 100);
+    }
+
+    // Make an obstacle by starting the obstacle animation
+    function makeObstacle() {
+        $("#obstacle").show().css({
+            "animation-name": "obstacle-animation",
+            "animation-duration": obstacleSpeed + "s"
+        });
+    }
+
+    // Make the player jump by starting the player animation
+    function jump() {
+
+		console.log("jump called");
+
+
+        document.getElementById('player').style.animationName = "player-jump";
+
+        $("#player").on("animationend", function() {
+		
+			document.getElementById('player').style.animationName = 'none';
+		
+		})
+    }
+
+    $(function () {
+        // Handle the spacebar key for controlling the player
+        $(document).on("keydown", function(e) {
+            // The player jumps if the spacebar key is down
+            if (e.keyCode == 32)
+                jump();
+        });
+
+        // The obstacle animation has finished
+        $("#obstacle").on("animationend", function() {
+            $("#obstacle").hide().css("animation-name", "none");
+            // Check if player jumped over (no game over)
+            if (!$("#gameover").is(":visible")) {
+                // Increase speed by reducing duration
+                obstacleSpeed = Math.max(3, obstacleSpeed - 3); // Minimum 2 seconds
+            }
+            // Schedule next obstacle
+            setTimeout(makeObstacle, Math.random() * 2000);
+        });
+
+        // The player animation has finished
+        $("#player").on("animationend", function() {
+
+            // You need to stop the animation here
+			document.getElementById('player').style.animationName = 'none';
+        });
+        
+        // Start the obstacle animation
+        setTimeout(makeObstacle, Math.random() * 2000);
+
+        // Start the game over checking
+        setTimeout(checkGameover, 100);
+
+        // Show the player
+        $("#player").show();
+    });
+    </script>
+</head>
+<body>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400">
+        <g class="background">
+        <title>Layer 1</title>
+        <defs>
+            <linearGradient id="sky_gradient"
+            x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0" stop-color = "darkblue" />
+            <stop offset="0.75" stop-color = "skyblue" />
+            </linearGradient>
+            <linearGradient id="ground_gradient"
+            x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0" stop-color = "black" />
+            <stop offset="0.25" stop-color = "darkgreen" />
+            </linearGradient>
+            <g id="cloud" >
+                <rect fill="#ffffff" height="30" rx="25" ry="25" width="100" y="50"/>
+            </g>
+        </defs>
+        </g>
+        <rect id="sky" height="300" width="1000" y="0" x="0" stroke="none" fill="url(#sky_gradient)"/>
+        <rect id="ground" height="100" width="1000" y="300" x="0" stroke="none" fill="url(#ground_gradient)"/>
+
+        <use href="#cloud" x="0" y="-25" id="cloud1"/>
+        <use href="#cloud" x="0" y="20" id="cloud2"/>
+
+        <g id="obstacle">
+            <image height="50" width="50" href="barrier_caution.svg" x="900" y="250"/>
+        </g>
+        <g id="player">
+            <image height="150" width="150" href="mario.svg" x="50" y="150"/>
+        </g>
+        <!-- The game over text -->
+        <g id="gameover-container">
+            <text id="gameover" x="0" y="0" fill="red"
+                  font-size="80px" text-anchor="middle">Game Over</text>
+        </g>
+
+        
+    </svg>
+</html>
